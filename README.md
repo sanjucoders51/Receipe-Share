@@ -9,7 +9,9 @@ A scalable, cloud-native multimedia recipe sharing platform built on Microsoft A
 | **Backend** | Azure Functions (Node.js v4) |
 | **Frontend** | HTML / CSS / Vanilla JS via Azure Blob Storage Static Website |
 | **Media Storage** | Azure Blob Storage |
-| **Database** | Azure SQL (relational metadata) |
+| **Database (SQL)** | Azure SQL (Relational metadata) |
+| **Database (NoSQL)** | **Azure Cosmos DB** (Real-time Notifications) |
+| **Workflow Engine** | **Azure Logic Apps** (Event-driven background tasks) |
 | **Observability** | Azure Application Insights (`applicationinsights`) |
 | **CI/CD** | Git-based workflows (GitHub Actions / Azure DevOps) |
 
@@ -19,18 +21,22 @@ A scalable, cloud-native multimedia recipe sharing platform built on Microsoft A
 recipe-share/
 ├── backend/
 │   ├── src/
-│   │   └── functions/
-│   │       ├── auth.js          # Registration & Login logic
-│   │       ├── recipes.js       # Recipe CRUD endpoints
-│   │       ├── stats.js         # Dashboard statistics
-│   │       ├── initDb.js        # Database initialization
-│   │       └── health.js        # Health check endpoint
+│   │   ├── functions/
+│   │   │   ├── auth.js          # Registration & Login logic
+│   │   │   ├── recipes.js       # Recipe CRUD & Notification triggers
+│   │   │   ├── notifications.js  # Gateway to Cosmos DB Notifications
+│   │   │   ├── stats.js         # Dashboard statistics
+│   │   │   ├── initDb.js        # Database initialization
+│   │   │   └── health.js        # Health check endpoint
+│   │   └── utils/
+│   │       └── logicAppClient.js # Shared utility for Azure Logic Apps
 │   ├── package.json             # Node.js dependencies
 │   ├── host.json                # Functions host config
 │   └── local.settings.json      # Connection strings (git-ignored)
 ├── frontend/
 │   ├── index.html               # Modern landing page
 │   ├── dashboard.html           # User dashboard (private)
+│   ├── notifications.html       # Real-time notification center 
 │   ├── feed.html                # Global recipe feed
 │   ├── login.html               # User authentication
 │   ├── register.html            # User registration
@@ -41,6 +47,7 @@ recipe-share/
 │       ├── css/style.css        # Premium design system
 │       ├── js/                  # Application logic
 │       └── utils/app.js         # Shared utilities & API client
+```
 ├── .gitignore
 └── README.md
 ```
@@ -108,3 +115,4 @@ npx serve .
 | `SQL_CONNECTION_STRING` | Azure SQL Database connection string |
 | `JWT_SECRET` | Secret key for signing and verifying JSON Web Tokens |
 | `APPINSIGHTS_INSTRUMENTATIONKEY` | Application Insights instrumentation key for monitoring |
+| `LOGIC_APP_NOTIFICATIONS_URL` | Unified endpoint for the Logic App handling notifications (Create/Get/Read) |
