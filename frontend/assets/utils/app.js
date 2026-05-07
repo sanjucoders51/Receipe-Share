@@ -78,15 +78,25 @@ function renderSidebar(activePage) {
 
   sidebarContainer.innerHTML = `
     <div class="sidebar-header">
-      <div class="navbar__logo" style="color: white; margin-bottom: 1rem;">
+      <div class="navbar__logo" style="color: white; margin-bottom: 2rem;">
         <span>🍳</span>
         <span>Recipe<span style="color: var(--color-primary);">Share</span></span>
       </div>
     </div>
     <nav class="sidebar-nav">
-      <a href="dashboard.html" class="nav-link ${activePage === 'dashboard' ? 'active' : ''}">Dashboard</a>
-      <a href="feed.html" class="nav-link ${activePage === 'feed' ? 'active' : ''}">Global Feed</a>
-      <a href="my-recipes.html" class="nav-link ${activePage === 'my-recipes' ? 'active' : ''}">My Recipes</a>
+      <a href="dashboard.html" class="nav-link ${activePage === 'dashboard' ? 'active' : ''}">
+        <span>📊 Dashboard</span>
+      </a>
+      <a href="notifications.html" class="nav-link ${activePage === 'notifications' ? 'active' : ''}" style="display: flex; justify-content: space-between; align-items: center;">
+        <span>🔔 Notifications</span>
+        <span class="notification-badge-sidebar" id="notif-badge-sidebar" style="display: none;">0</span>
+      </a>
+      <a href="feed.html" class="nav-link ${activePage === 'feed' ? 'active' : ''}">
+        <span>🌍 Global Feed</span>
+      </a>
+      <a href="my-recipes.html" class="nav-link ${activePage === 'my-recipes' ? 'active' : ''}">
+        <span>👨‍🍳 My Recipes</span>
+      </a>
       <div class="nav-divider"></div>
       <a href="#" id="logout-btn" class="nav-link nav-link-danger">
         <svg style="width: 1.25rem; height: 1.25rem; margin-right: 0.5rem; vertical-align: middle;" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path></svg>
@@ -95,6 +105,7 @@ function renderSidebar(activePage) {
     </nav>
   `;
 
+  // Logout
   document.getElementById('logout-btn').addEventListener('click', (e) => {
     e.preventDefault();
     logout();
@@ -105,6 +116,64 @@ function renderSidebar(activePage) {
     mobileBtn.addEventListener('click', () => {
       sidebarContainer.classList.toggle('open');
     });
+  }
+
+  // Start notification polling if logged in
+  if (getCurrentUser()) {
+    initNotifications();
+  }
+}
+
+async function initNotifications() {
+  const fetchAndRefreshBadge = async () => {
+    try {
+      const notifications = await apiFetch('/notifications');
+      const unreadCount = notifications.filter(n => !n.isRead).length;
+      
+      const badge = document.getElementById('notif-badge-sidebar');
+      if (badge) {
+        badge.textContent = unreadCount;
+        badge.style.display = unreadCount > 0 ? 'flex' : 'none';
+      }
+      
+      // If we are on the notifications page, also update the list if a function exists
+      if (typeof renderNotificationsPage === 'function') {
+        renderNotificationsPage(notifications);
+      }
+    } catch (e) {
+      console.error('Failed to fetch notifications:', e);
+    }
+  };
+
+  fetchAndRefreshBadge();
+  setInterval(fetchAndRefreshBadge, 30000); 
+}
+
+async function markAsRead(id) {
+  console.log(`[Notifications] Marking ${id} as read...`);
+  
+  // 1. Update UI Instantly (Optimistic Update)
+  const card = document.getElementById(`notif-${id}`);
+  if (card) {
+    card.classList.remove('unread');
+    const actions = card.querySelector('.notification-card__actions');
+    if (actions) actions.remove();
+  }
+
+  const badge = document.getElementById('notif-badge-sidebar');
+  if (badge) {
+    const current = Math.max(0, parseInt(badge.textContent || "0") - 1);
+    badge.textContent = current;
+    if (current <= 0) badge.style.display = 'none';
+  }
+
+  // 2. Send to Backend in background
+  try {
+    await apiFetch(`/notifications/${id}`, { method: 'PUT' });
+    console.log(`[Notifications] ${id} successfully marked as read in DB.`);
+  } catch (e) {
+    console.error(`[Notifications] Failed to update DB for ${id}:`, e);
+    // If it fails, we could potentially revert the UI here if needed
   }
 }
 

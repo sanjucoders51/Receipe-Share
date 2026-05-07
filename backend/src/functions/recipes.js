@@ -156,6 +156,22 @@ app.http("recipes", {
               `);
           }
         }
+
+        // Trigger Logic App Workflow: New Recipe Notification
+        const { triggerLogicApp } = require("../utils/logicAppClient");
+        const logicAppUrl = process.env.LOGIC_APP_NOTIFICATIONS_URL;
+
+        // Fire and forget
+        triggerLogicApp(logicAppUrl, {
+          action: "create",
+          recipeId: newId,
+          userId: userId,
+          title: title,
+          description: description,
+          videoUrl: videoUrl,
+          createdAt: new Date().toISOString()
+        });
+
         return jsonResponse({ id: newId, message: "Recipe created successfully" }, 201);
       } catch (e) {
         return jsonResponse({ error: e.message }, e.message.includes("Authorization") ? 401 : 500);

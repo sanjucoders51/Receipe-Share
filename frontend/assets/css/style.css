@@ -193,6 +193,179 @@ ul, ol { list-style: none; }
 
 .navbar__avatar:hover { border-color: var(--accent-start); }
 
+/* --- Notification System --- */
+.notification-bell {
+  position: relative;
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-full);
+  color: #FFFFFF;
+  cursor: pointer;
+  transition: all var(--transition-fast);
+}
+
+.notification-bell:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: var(--accent-start);
+}
+
+.notification-badge-sidebar {
+  background: var(--error);
+  color: white;
+  font-size: 0.6rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 10px rgba(239, 68, 68, 0.4);
+}
+
+.notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--error);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid var(--bg-navbar);
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + var(--space-md));
+  right: 0;
+  width: 320px;
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  display: none;
+  z-index: 1001;
+  animation: fadeInDown 0.3s ease-out;
+}
+
+.notification-dropdown.open { display: block; }
+
+.notification-dropdown__header {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-glass);
+  font-weight: 600;
+  font-size: 0.9rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-list {
+  max-height: 360px;
+  overflow-y: auto;
+}
+
+.notification-item {
+  padding: var(--space-md);
+  border-bottom: 1px solid var(--border-glass);
+  display: flex;
+  gap: var(--space-sm);
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.notification-item:hover { background: var(--bg-card-hover); }
+.notification-item.unread { background: var(--gradient-subtle); }
+
+.notification-item__content { font-size: 0.85rem; }
+.notification-item__text { margin-bottom: 2px; }
+.notification-item__date { font-size: 0.75rem; color: var(--text-muted); }
+
+/* --- Notifications Page Specific --- */
+.notifications-container {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.notifications-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-xl);
+}
+
+.notification-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-glass);
+  border-radius: var(--radius-lg);
+  padding: var(--space-lg);
+  margin-bottom: var(--space-md);
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-md);
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.notification-card:hover {
+  transform: translateX(4px);
+  border-color: var(--border-glass-hover);
+  box-shadow: var(--shadow-md);
+}
+
+.notification-card.unread {
+  border-left: 4px solid var(--accent-start);
+  background: var(--bg-card-hover);
+}
+
+.notification-card__icon {
+  width: 40px;
+  height: 40px;
+  background: var(--gradient-subtle);
+  border-radius: var(--radius-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+}
+
+.notification-card__content {
+  flex: 1;
+}
+
+.notification-card__message {
+  font-size: 0.95rem;
+  font-weight: 500;
+  margin-bottom: 4px;
+  color: var(--text-primary);
+}
+
+.notification-card__time {
+  font-size: 0.8rem;
+  color: var(--text-muted);
+}
+
+.notification-card__actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-md);
+}
+
 /* Mobile Nav Toggle */
 .navbar__toggle {
   display: none;

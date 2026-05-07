@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Notifications - RecipeShare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+</head>
+<body>
+  <div class="app-container">
+    <button class="mobile-menu-btn" id="mobile-menu-btn">Menu</button>
+    <aside class="sidebar" id="sidebar">
+      <!-- Sidebar populated by JS -->
+    </aside>
+
+    <main class="main-content">
+      <div class="notifications-container">
+        <div class="notifications-header">
+          <h1 class="section-title">Notifications</h1>
+          <button class="btn btn--secondary btn--sm" id="mark-all-read-btn">
+            <span>✓</span> Mark all as read
+          </button>
+        </div>
+
+        <div id="notifications-list">
+          <div class="loading-spinner">
+            <div class="loading-spinner__circle"></div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/utils/app.js"></script>
+  <script>
+    const notificationsList = document.getElementById('notifications-list');
+    const markAllBtn = document.getElementById('mark-all-read-btn');
+
+    // This function is called by the polling engine in app.js
+    window.renderNotificationsPage = function(notifications) {
+      if (notifications.length === 0) {
+        notificationsList.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-state__icon">🔔</div>
+            <p class="empty-state__text">You're all caught up! No notifications yet.</p>
+          </div>
+        `;
+        return;
+      }
+
+      notificationsList.innerHTML = notifications.map(n => `
+        <div class="notification-card ${n.isRead ? '' : 'unread'}" id="notif-${n.id}">
+          <div class="notification-card__icon">
+            ${n.message.includes('recipe') ? '🍲' : '👤'}
+          </div>
+          <div class="notification-card__content">
+            <div class="notification-card__message">${n.message}</div>
+            <div class="notification-card__time">${new Date(n.createdAt).toLocaleString()}</div>
+            ${!n.isRead ? `
+              <div class="notification-card__actions">
+                <button class="btn btn--primary btn--sm" onclick="handleMarkAsRead('${n.id}')">Mark as read</button>
+              </div>
+            ` : ''}
+          </div>
+        </div>
+      `).join('');
+    };
+
+    async function handleMarkAsRead(id) {
+      try {
+        await markAsRead(id); // Now handles UI update internally
+      } catch (e) {
+        console.error('Failed to mark read:', e);
+      }
+    }
+
+    markAllBtn.addEventListener('click', async () => {
+      const unreadCards = document.querySelectorAll('.notification-card.unread');
+      for (const card of unreadCards) {
+        const id = card.id.replace('notif-', '');
+        await handleMarkAsRead(id);
+      }
+    });
+
+    document.addEventListener('DOMContentLoaded', () => {
+      requireAuth();
+      renderSidebar('notifications');
+    });
+  </script>
+</body>
+</html>
