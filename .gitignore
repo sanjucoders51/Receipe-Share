@@ -1,0 +1,23 @@
+# Node
+node_modules/
+npm-debug.log*
+bin/
+obj/
+
+# Azure Functions
+local.settings.json
+.funcignore
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Environment
+.env
+.env.local

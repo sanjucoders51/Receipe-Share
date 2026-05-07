@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Login - RecipeShare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+</head>
+<body>
+  <div class="auth-container">
+    <div class="navbar__logo" style="justify-content: center; margin-bottom: 2rem; color: white;">
+      <a href="index.html" class="navbar__logo"> 
+        <span class="navbar__logo-icon">🍳</span>
+        <span>Recipe<span style="color: var(--accent-start);">Share</span></span>
+      </a>
+    </div>
+    <div class="auth-card">
+      <h1>Login to Account</h1>
+      
+      <div id="error-banner" class="error-message" style="text-align: center; margin-bottom: 1rem; font-size: 1rem;"></div>
+
+      <form id="login-form">
+        <div class="form-group">
+          <label for="identifier">Username</label>
+          <input type="text" id="identifier" name="identifier" placeholder="Enter your username or email">
+        </div>
+        
+        <div class="form-group">
+          <label for="password">Password</label>
+          <input type="password" id="password" name="password" placeholder="Enter your password">
+          <button type="button" class="password-toggle" data-target="password"></button>
+        </div>
+        
+        <button type="submit" class="btn-primary" style="width: 100%;">Login</button>
+        
+        <div class="auth-links">
+          Don't have an account? <a href="register.html">Register</a>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script src="assets/utils/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      setupPasswordToggles();
+
+      const form = document.getElementById('login-form');
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const identifier = document.getElementById('identifier').value.trim();
+        const password = document.getElementById('password').value;
+        const errorBanner = document.getElementById('error-banner');
+        
+        if (!identifier || !password) {
+          errorBanner.textContent = 'Please fill in all fields.';
+          errorBanner.style.display = 'block';
+          return;
+        }
+        
+        try {
+          const data = await apiFetch('/login', {
+            method: 'POST',
+            body: JSON.stringify({ identifier, password })
+          });
+          
+          Storage.set('recipeshare_token', data.token);
+          Storage.set('recipeshare_current_user', data.user);
+          window.location.href = 'dashboard.html';
+        } catch (e) {
+          errorBanner.textContent = e.message || 'Invalid credentials. Please try again.';
+          errorBanner.style.display = 'block';
+        }
+      });
+    });
+  </script>
+</body>
+</html>

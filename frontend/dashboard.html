@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - RecipeShare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+</head>
+<body>
+  <div class="app-container">
+    <button class="mobile-menu-btn" id="mobile-menu-btn">Menu</button>
+    <aside class="sidebar" id="sidebar">
+      <!-- Sidebar populated by JS -->
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h1 id="welcome-message">Welcome back!</h1>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Recipes</h3>
+          <div class="stat-value">...</div>
+        </div>
+        <div class="stat-card">
+          <h3>My Recipes</h3>
+          <div class="stat-value" id="my-recipes-count">...</div>
+        </div>
+        <div class="stat-card">
+          <h3>Total Users</h3>
+          <div class="stat-value">...</div>
+        </div>
+        <div class="stat-card">
+          <h3>Videos Uploaded</h3>
+          <div class="stat-value">...</div>
+        </div>
+      </div>
+
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-size: 1.25rem;">Recent Recipes</h2>
+      </div>
+
+      <div class="recipe-grid" id="recent-recipes-grid">
+        <!-- Recipes populated by JS -->
+      </div>
+    </main>
+  </div>
+
+  <script src="assets/utils/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', async () => {
+      // Protect route
+      const user = requireAuth();
+      
+      // Initialize layout
+      renderSidebar('dashboard');
+      
+      // Personalize
+      document.getElementById('welcome-message').textContent = `Welcome back, ${user.username}!`;
+      
+      try {
+        const stats = await apiFetch('/stats');
+        document.querySelector('.stat-card:nth-child(1) .stat-value').textContent = stats.totalRecipes || 0;
+        document.getElementById('my-recipes-count').textContent = stats.myRecipesCount || 0;
+        document.querySelector('.stat-card:nth-child(3) .stat-value').textContent = stats.totalUsers || 0;
+        document.querySelector('.stat-card:nth-child(4) .stat-value').textContent = stats.videosUploaded || 0;
+      } catch (e) {
+        console.error('Failed to fetch stats:', e);
+      }
+      
+      const recentRecipesGrid = document.getElementById('recent-recipes-grid');
+      try {
+        const allRecipes = await apiFetch('/recipes');
+        const recentRecipes = allRecipes.slice(0, 3);
+        
+        if (recentRecipes.length === 0) {
+          recentRecipesGrid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <p>No recipes available yet.</p>
+            </div>
+          `;
+        } else {
+          recentRecipesGrid.innerHTML = recentRecipes.map(recipe => {
+            let thumbUrl = '';
+            if (recipe.media && recipe.media.length > 0) thumbUrl = recipe.media[0];
+            else if (recipe.steps && recipe.steps.length > 0 && recipe.steps[0].imageUrl) thumbUrl = recipe.steps[0].imageUrl;
+            
+            if (!thumbUrl && !recipe.videoUrl) thumbUrl = getPlaceholderImage();
+
+            return `
+            <div class="recipe-card">
+              <div class="recipe-image-placeholder">
+                ${thumbUrl ? `<img src="${thumbUrl}" alt="${recipe.title}" style="width:100%;height:100%;object-fit:cover;">` : (recipe.videoUrl ? '🎬 Video Content' : 'No Media')}
+              </div>
+              <div class="recipe-content">
+                <h3 class="recipe-title">${recipe.title}</h3>
+                <p class="recipe-author">by ${recipe.user ? recipe.user.username : 'Unknown'}</p>
+                <p class="recipe-desc">${(recipe.description || '').substring(0, 100)}${(recipe.description || '').length > 100 ? '...' : ''}</p>
+                <div class="recipe-actions">
+                  <button class="btn-primary" onclick="window.location.href='recipe-details.html?id=${recipe.id}'">View</button>
+                </div>
+              </div>
+            </div>
+            `;
+          }).join('');
+        }
+      } catch (e) {
+        console.error('Failed to fetch recipes:', e);
+        recentRecipesGrid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><p>Failed to load recipes.</p></div>';
+      }
+    });
+  </script>
+</body>
+</html>

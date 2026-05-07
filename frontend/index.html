@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>RecipeShare - Share and Discover Amazing Recipes</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+  <style>
+    /* Custom styles for landing page to enhance premium feel */
+    .hero {
+      background: linear-gradient(to bottom, #EFF2F7 0%, #FFFFFF 100%);
+      padding-top: 10rem;
+    }
+    .feature-card {
+      background: var(--bg-card);
+      padding: var(--space-xl);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border-glass);
+      transition: all var(--transition-base);
+    }
+    .feature-card:hover {
+      transform: translateY(-5px);
+      box-shadow: var(--shadow-lg);
+      border-color: var(--accent-start);
+    }
+    .feature-icon {
+      font-size: 2.5rem;
+      margin-bottom: var(--space-md);
+      display: inline-block;
+    }
+    .navbar__links {
+      flex: 1;
+      justify-content: flex-end;
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <div class="container">
+      <div style="display: flex; align-items: center; gap: var(--space-xl);">
+        <a href="index.html" class="navbar__logo">
+          <div class="navbar__logo-icon">🍳</div>
+          <span style="color: #FFFFFF;">Recipe<span style="color: var(--accent-start);">Share</span></span>
+        </a>
+        <nav class="navbar__links" style="display: flex;">
+          <a href="index.html" class="active" style="color: #FFFFFF;">Home</a>
+        </nav>
+      </div>
+
+      <div class="navbar__actions">
+        <a href="login.html" class="btn btn--secondary btn--sm">Login</a>
+        <a href="register.html" class="btn btn--primary btn--sm">Register</a>
+      </div>
+    </div>
+  </header>
+
+  <main style="flex: 1;">
+    <section class="hero">
+      <div class="container">
+        <div class="hero__badge">
+          <span class="hero__badge-dot"></span>
+          <span>The world's fastest growing recipe community</span>
+        </div>
+        <h1 class="hero__title">Share your <span class="gradient-text">Culinary Magic</span> with the World</h1>
+        <p class="hero__subtitle">
+          Discover thousands of tested recipes from home cooks and professional chefs. Upload your own creations with multimedia steps and videos.
+        </p>
+        <div class="hero__actions">
+          <a href="register.html" class="btn btn--primary btn--lg">Get Started Free</a>
+          <a href="login.html" class="btn btn--secondary btn--lg">Explore Recipes</a>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="container">
+        <div class="section__header">
+          <span class="section__label">Why RecipeShare?</span>
+          <h2 class="section__title">Everything you need to inspire</h2>
+          <p class="section__description">A platform built for creators and food lovers to share their passion for cooking.</p>
+        </div>
+
+        <div class="recipe-grid" style="grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));">
+          <div class="feature-card">
+            <span class="feature-icon">📸</span>
+            <h3 class="recipe-card__title">Step-by-Step Media</h3>
+            <p class="recipe-card__desc">Guide others with high-quality images and videos for every single step of your recipe.</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">🌐</span>
+            <h3 class="recipe-card__title">Global Community</h3>
+            <p class="recipe-card__desc">Join thousands of food enthusiasts. Like, comment, and save your favorite dishes.</p>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">📱</span>
+            <h3 class="recipe-card__title">Organized Library</h3>
+            <p class="recipe-card__desc">Keep all your personal recipes in one place, accessible from any device at any time.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <div class="container">
+      <div class="footer__content">
+        <div class="navbar__logo" style="margin-bottom: 0; color: #FFFFFF;">
+          <span class="navbar__logo-icon">🍳</span>
+          <span>Recipe<span style="color: var(--accent-start);">Share</span></span>
+        </div>
+        <p class="footer__text">© 2026 RecipeShare. All culinary rights reserved.</p>
+        <div class="footer__links">
+          <a href="#">Privacy</a>
+          <a href="#">Terms</a>
+          <a href="#">Contact</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="assets/utils/app.js"></script>
+</body>
+</html>

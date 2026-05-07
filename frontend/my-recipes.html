@@ -1,0 +1,440 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Recipes - RecipeShare</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <link rel="icon" type="image/png" href="assets/img/favicon.png">
+</head>
+<body>
+  <div class="app-container">
+    <button class="mobile-menu-btn" id="mobile-menu-btn">Menu</button>
+    <aside class="sidebar" id="sidebar">
+      <!-- Sidebar populated by JS -->
+    </aside>
+
+    <main class="main-content">
+      <div class="page-header">
+        <h1>My Recipes</h1>
+        <button class="btn-accent" id="open-modal-btn">Upload New Recipe</button>
+      </div>
+
+      <div class="recipe-grid" id="my-recipes-grid">
+        <!-- Recipes populated by JS -->
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal-overlay" id="recipe-modal">
+    <div class="modal-content">
+      <button class="modal-close" id="close-modal-btn">&times;</button>
+      <h2 id="modal-title" style="margin-bottom: 1.5rem;">Upload New Recipe</h2>
+      
+      <form id="recipe-form">
+        <input type="hidden" id="recipe-id">
+        
+        <div class="form-group">
+          <label for="title">Title <span style="color: red;">*</span></label>
+          <input type="text" id="title" required>
+        </div>
+        
+        <div class="form-group">
+          <label for="description">Description <span style="color: red;">*</span></label>
+          <textarea id="description" rows="3" required></textarea>
+        </div>
+        
+        <div class="form-group">
+          <label>Main Recipe Video</label>
+          <div class="upload-zone" id="video-upload-zone">
+            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"></path></svg>
+            <span class="upload-zone__text">Click or drag video to upload</span>
+            <span class="upload-zone__subtext">MP4, MOV, or AVI (Max. 100MB)</span>
+            <input type="file" id="videoFile" accept="video/*">
+          </div>
+          <div id="video-preview-filename" class="upload-zone__filename"></div>
+        </div>
+
+
+        
+        <div class="form-group">
+          <label>Recipe Steps <span style="color: red;">*</span></label>
+          <div id="steps-container">
+            <!-- Dynamic steps -->
+          </div>
+          <button type="button" id="add-step-btn" class="btn-outline" style="margin-top: 1rem; width: 100%;">+ Add Step</button>
+        </div>
+        
+        <div class="modal-actions">
+          <button type="button" class="btn-outline" id="cancel-btn">Cancel</button>
+          <button type="submit" class="btn-primary">Submit</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="delete-modal">
+    <div class="modal-content" style="max-width: 400px; text-align: center;">
+      <h2 style="margin-bottom: 1rem;">Confirm Deletion</h2>
+      <p style="margin-bottom: 1.5rem; color: var(--text-muted);">Are you sure you want to delete this recipe? This action cannot be undone.</p>
+      <div class="modal-actions" style="justify-content: center;">
+        <button type="button" class="btn-outline" id="cancel-delete-btn">Cancel</button>
+        <button type="button" class="btn-primary" style="background-color: var(--color-error); border-color: var(--color-error);" id="confirm-delete-btn">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="assets/utils/app.js"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      const user = requireAuth();
+      renderSidebar('my-recipes');
+      
+      const grid = document.getElementById('my-recipes-grid');
+      const modal = document.getElementById('recipe-modal');
+      const form = document.getElementById('recipe-form');
+      const modalTitle = document.getElementById('modal-title');
+      const stepsContainer = document.getElementById('steps-container');
+      const addStepBtn = document.getElementById('add-step-btn');
+      
+      let stepCount = 0;
+
+      function createStepElement(stepData = null) {
+        stepCount++;
+        const stepId = stepCount;
+        const stepDiv = document.createElement('div');
+        stepDiv.className = 'step-item';
+        stepDiv.style.alignItems = 'center'; // Fix vertical alignment
+        stepDiv.dataset.stepId = stepId;
+        
+        stepDiv.innerHTML = `
+          <button type="button" class="btn-remove-step-mini" title="Remove Step">&times;</button>
+          
+          <div class="step-number-col">
+            <div class="step-number-label">Step</div>
+            <span class="step-number">${document.querySelectorAll('.step-item').length + 1}</span>
+          </div>
+
+          <div class="step-instruction-col">
+            <textarea class="step-instruction" placeholder="Describe what to do in this step..." required style="height: 120px; resize: none; margin: 0;">${stepData ? stepData.instruction : ''}</textarea>
+          </div>
+ 
+          <div class="step-image-col">
+            <div class="upload-zone step-upload-zone" style="padding: 0; height: 120px; width: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; position: relative; border-radius: var(--radius-md); margin: 0;">
+              <div class="step-placeholder" style="${stepData && stepData.imageUrl ? 'display: none;' : 'display: flex; flex-direction: column; align-items: center;'}">
+                <svg fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" style="width: 24px; height: 24px; margin-bottom: 4px;"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                <span style="font-size: 0.7rem; font-weight: 600;">Add Photo</span>
+              </div>
+              <img class="step-preview-img" src="${stepData && stepData.imageUrl ? stepData.imageUrl : ''}" style="${stepData && stepData.imageUrl ? 'display: block;' : 'display: none;'} width: 100%; height: 100%; object-fit: cover; position: absolute; inset: 0;">
+              <input type="file" class="step-image" accept="image/*" style="position: absolute; inset: 0; opacity: 0; cursor: pointer; z-index: 2;">
+            </div>
+          </div>
+        `;
+        
+        const removeBtn = stepDiv.querySelector('.btn-remove-step-mini');
+        removeBtn.addEventListener('click', () => {
+          stepDiv.style.opacity = '0';
+          stepDiv.style.transform = 'scale(0.95)';
+          setTimeout(() => {
+            stepDiv.remove();
+            updateStepNumbers();
+          }, 200);
+        });
+ 
+        // Handle step image filename display
+        const fileInput = stepDiv.querySelector('.step-image');
+        const placeholder = stepDiv.querySelector('.step-placeholder');
+        const previewImg = stepDiv.querySelector('.step-preview-img');
+
+        fileInput.addEventListener('change', (e) => {
+          if (e.target.files.length > 0) {
+            const file = e.target.files[0];
+            const reader = new FileReader();
+            reader.onload = (event) => {
+              previewImg.src = event.target.result;
+              previewImg.style.display = 'block';
+              placeholder.style.display = 'none';
+            };
+            reader.readAsDataURL(file);
+          } else {
+            // No file chosen, return to original state
+            previewImg.src = '';
+            previewImg.style.display = 'none';
+            placeholder.style.display = 'flex';
+          }
+        });
+
+        // Drag & Drop for step image
+        const stepZone = stepDiv.querySelector('.step-upload-zone');
+        setupDragDrop(stepZone, fileInput);
+        
+        return stepDiv;
+      }
+
+      function setupDragDrop(zone, input) {
+        ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+          zone.addEventListener(eventName, (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+          }, false);
+        });
+
+        ['dragenter', 'dragover'].forEach(eventName => {
+          zone.addEventListener(eventName, () => zone.classList.add('dragover'), false);
+        });
+
+        ['dragleave', 'drop'].forEach(eventName => {
+          zone.addEventListener(eventName, () => zone.classList.remove('dragover'), false);
+        });
+
+        zone.addEventListener('drop', (e) => {
+          const dt = e.dataTransfer;
+          const files = dt.files;
+          input.files = files;
+          // Trigger change event manually
+          const event = new Event('change', { bubbles: true });
+          input.dispatchEvent(event);
+        }, false);
+      }
+
+      // Initialize Main Drag & Drop
+      const videoZone = document.getElementById('video-upload-zone');
+      const videoInput = document.getElementById('videoFile');
+      const videoDisplay = document.getElementById('video-preview-filename');
+      
+      setupDragDrop(videoZone, videoInput);
+      videoInput.addEventListener('change', (e) => {
+        if (e.target.files.length > 0) {
+          videoDisplay.textContent = `Selected: ${e.target.files[0].name}`;
+        }
+      });
+
+
+      
+      function updateStepNumbers() {
+        const steps = document.querySelectorAll('.step-item');
+        steps.forEach((step, index) => {
+          step.querySelector('.step-number').textContent = index + 1;
+        });
+      }
+
+      addStepBtn.addEventListener('click', () => {
+        stepsContainer.appendChild(createStepElement());
+      });
+
+      document.getElementById('open-modal-btn').addEventListener('click', () => {
+        form.reset();
+        currentEditRecipe = null;
+        document.getElementById('recipe-id').value = '';
+        stepsContainer.innerHTML = '';
+
+        videoDisplay.textContent = '';
+        stepCount = 0;
+        stepsContainer.appendChild(createStepElement()); // Add first step by default
+        modalTitle.textContent = 'Upload New Recipe';
+        modal.classList.add('active');
+      });
+      
+      document.getElementById('close-modal-btn').addEventListener('click', closeModal);
+      document.getElementById('cancel-btn').addEventListener('click', closeModal);
+      
+      function closeModal() {
+        modal.classList.remove('active');
+      }
+      
+      let myRecipes = [];
+      let currentEditRecipe = null;
+      
+      async function fetchMyRecipes() {
+        try {
+          myRecipes = await apiFetch(`/recipes?userId=${user.id}`);
+          renderMyRecipes();
+        } catch (e) {
+          console.error("Failed to fetch my recipes:", e);
+          grid.innerHTML = '<div class="empty-state" style="grid-column: 1 / -1;"><p>Failed to load recipes.</p></div>';
+        }
+      }
+      
+      function renderMyRecipes() {
+        if (myRecipes.length === 0) {
+          grid.innerHTML = `
+            <div class="empty-state" style="grid-column: 1 / -1;">
+              <p>You haven't uploaded any recipes yet.</p>
+            </div>
+          `;
+          return;
+        }
+        
+        grid.innerHTML = myRecipes.map(recipe => {
+          let thumbUrl = '';
+          if (recipe.media && recipe.media.length > 0) {
+              thumbUrl = recipe.media[0];
+          }
+          else if (recipe.steps && recipe.steps.length > 0 && recipe.steps[0].imageUrl) {
+              thumbUrl = recipe.steps[0].imageUrl; 
+          }
+          
+          if (!thumbUrl && !recipe.videoUrl) thumbUrl = getPlaceholderImage();
+
+          return `
+          <div class="recipe-card">
+            <div class="recipe-image-placeholder">
+              ${thumbUrl ? `<img src="${thumbUrl}" alt="${recipe.title}" style="width:100%;height:100%;object-fit:cover;">` : (recipe.videoUrl ? '🎬 Video Content' : 'No Media Preview')}
+            </div>
+            <div class="recipe-content">
+              <h3 class="recipe-title">${recipe.title}</h3>
+              <p class="recipe-desc">${(recipe.description || '').substring(0, 100)}${(recipe.description || '').length > 100 ? '...' : ''}</p>
+              <div class="recipe-actions" style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <button class="btn-primary" style="flex: 1; padding: 0.5rem 0;" onclick="window.location.href='recipe-details.html?id=${recipe.id}'">View</button>
+                <button class="btn-outline" style="flex: 1; padding: 0.5rem 0; color: var(--color-primary); border-color: var(--color-primary);" onclick="editRecipe('${recipe.id}')">Edit</button>
+                <button class="btn-outline" style="flex: 1; padding: 0.5rem 0; color: var(--color-error); border-color: var(--color-error);" onclick="deleteRecipe('${recipe.id}')">Delete</button>
+              </div>
+            </div>
+          </div>
+          `;
+        }).join('');
+      }
+      
+      // Initial render
+      fetchMyRecipes();
+      
+      async function uploadFile(file) {
+        if (!file) return '';
+        const formData = new FormData();
+        formData.append('file', file);
+        const data = await apiFetch('/upload', {
+          method: 'POST',
+          body: formData,
+          headers: {} // Let browser set Content-Type for FormData
+        });
+        return data.url;
+      }
+      
+      // Handle form submit
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const id = document.getElementById('recipe-id').value;
+        const videoInput = document.getElementById('videoFile');
+        const submitBtn = form.querySelector('button[type="submit"]');
+        
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Uploading...';
+        
+        try {
+          // Upload video if selected
+          let finalVideoUrl = currentEditRecipe ? currentEditRecipe.videoUrl : '';
+          if (videoInput.files.length > 0) {
+            finalVideoUrl = await uploadFile(videoInput.files[0]);
+          }
+          
+          // Parse and upload steps images
+          const stepElements = document.querySelectorAll('.step-item');
+          const steps = await Promise.all(Array.from(stepElements).map(async (el, index) => {
+            const fileInput = el.querySelector('.step-image');
+            let imageUrl = '';
+            
+            if (fileInput.files.length > 0) {
+               imageUrl = await uploadFile(fileInput.files[0]);
+            } else if (currentEditRecipe && currentEditRecipe.steps && currentEditRecipe.steps[index]) {
+               imageUrl = currentEditRecipe.steps[index].imageUrl || '';
+            }
+            
+            return {
+              stepNumber: index + 1,
+              instructions: el.querySelector('.step-instruction').value.trim(),
+              imageUrl: imageUrl
+            };
+          }));
+  
+          const payload = {
+            title: document.getElementById('title').value.trim(),
+            description: document.getElementById('description').value.trim(),
+            videoUrl: finalVideoUrl,
+            steps: steps
+          };
+          
+          if (id) {
+            await apiFetch(`/recipes/${id}`, {
+              method: 'PUT',
+              body: JSON.stringify(payload)
+            });
+          } else {
+            await apiFetch('/recipes', {
+              method: 'POST',
+              body: JSON.stringify(payload)
+            });
+          }
+          
+          closeModal();
+          fetchMyRecipes();
+        } catch (error) {
+          console.error("Error saving recipe:", error);
+          alert("Error saving recipe: " + error.message);
+        } finally {
+          submitBtn.disabled = false;
+          submitBtn.textContent = 'Submit';
+        }
+      });
+      
+      // Global functions for inline onclick handlers
+      window.editRecipe = function(id) {
+        const recipe = myRecipes.find(r => r.id == id);
+        if (recipe) {
+          currentEditRecipe = recipe;
+          document.getElementById('recipe-id').value = recipe.id;
+          document.getElementById('title').value = recipe.title;
+          document.getElementById('description').value = recipe.description;
+          
+          stepsContainer.innerHTML = '';
+          stepCount = 0;
+          if (recipe.steps && recipe.steps.length > 0) {
+            recipe.steps.forEach(step => {
+              stepsContainer.appendChild(createStepElement({
+                instruction: step.instructions,
+                imageUrl: step.imageUrl
+              }));
+            });
+          } else {
+            stepsContainer.appendChild(createStepElement());
+          }
+          
+          modalTitle.textContent = 'Edit Recipe';
+          modal.classList.add('active');
+        }
+      };
+      
+      let recipeToDelete = null;
+      const deleteModal = document.getElementById('delete-modal');
+      
+      window.deleteRecipe = function(id) {
+        recipeToDelete = id;
+        deleteModal.classList.add('active');
+      };
+      
+      document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+        deleteModal.classList.remove('active');
+        recipeToDelete = null;
+      });
+      
+      document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
+        if (!recipeToDelete) return;
+        
+        try {
+          await apiFetch(`/recipes/${recipeToDelete}`, { method: 'DELETE' });
+          fetchMyRecipes();
+          deleteModal.classList.remove('active');
+          recipeToDelete = null;
+        } catch (e) {
+          alert('Failed to delete: ' + e.message);
+        }
+      });
+    });
+  </script>
+</body>
+</html>

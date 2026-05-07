@@ -1,0 +1,22 @@
+{
+  "name": "recipeshare-backend",
+  "version": "1.0.0",
+  "description": "RecipeShare – Azure Functions Node.js v4 Backend",
+  "main": "src/functions/*.js",
+  "scripts": {
+    "start": "func start",
+    "test": "echo \"No tests configured\" && exit 0"
+  },
+  "dependencies": {
+    "@azure/functions": "^4.5.0",
+    "@azure/storage-blob": "^12.17.0",
+    "applicationinsights": "^2.9.5",
+    "bcryptjs": "^3.0.3",
+    "jsonwebtoken": "^9.0.3",
+    "mssql": "^10.0.2",
+    "uuid": "^9.0.0"
+  },
+  "devDependencies": {
+    "azure-functions-core-tools": "^4.0.0"
+  }
+}
