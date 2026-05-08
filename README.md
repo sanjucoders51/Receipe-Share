@@ -77,33 +77,89 @@ recipe-share/
 ## Local Development
 
 ### Prerequisites
-
-- Node.js 18+
+- [Node.js 20.x](https://nodejs.org/)
 - [Azure Functions Core Tools v4](https://learn.microsoft.com/en-us/azure/azure-functions/functions-run-local)
+- [Azure CLI](https://learn.microsoft.com/en-us/cli/azure/install-azure-cli)
+- [Visual Studio Code](https://code.visualstudio.com/) with [Live Server](https://marketplace.visualstudio.com/items?itemName=ritwickdey.LiveServer) extension
 
 ### Backend Setup
+1. Navigate to the backend directory:
+   ```bash
+   cd backend
+   npm install
+   ```
+2. Create a `local.settings.json` file in the `backend/` folder:
+   ```json
+   {
+     "IsEncrypted": false,
+     "Values": {
+       "AzureWebJobsStorage": "UseDevelopmentStorage=true",
+       "FUNCTIONS_WORKER_RUNTIME": "node",
+       "AZURE_STORAGE_CONNECTION_STRING": "your_storage_connection_string",
+       "SQL_CONNECTION_STRING": "your_sql_connection_string",
+       "JWT_SECRET": "your_jwt_secret",
+       "LOGIC_APP_NOTIFICATIONS_URL": "your_logic_app_url"
+     }
+   }
+   ```
+3. Start the backend:
+   ```bash
+   func start
+   ```
 
+### Frontend Setup
+1. Open the project in VS Code.
+2. Right-click on `frontend/index.html` and select **"Open with Live Server"**.
+3. The frontend will be available at `http://127.0.0.1:5500`.
+
+---
+
+## Deployment
+
+### CI/CD (Automated)
+Deployments are handled automatically via GitHub Actions:
+- **Frontend Deploy**: Triggered when changes are pushed to `main` within the `frontend/` directory.
+- **Backend Deploy**: Triggered when changes are pushed to `main` within the `backend/` directory.
+
+You can also trigger these workflows manually from the **Actions** tab in GitHub.
+
+### Manual Deployment
+If you need to deploy manually from your local machine, use the provided shell scripts:
+
+#### 1. Frontend Deployment
+Ensure you have your Azure Storage Key available:
 ```bash
-cd backend
-npm install
+AZURE_STORAGE_KEY="your_key_here" ./deploy-frontend.sh
 ```
 
-Edit `local.settings.json` with your Azure connection strings, then:
-
+#### 2. Backend Deployment
+Ensure you are logged into Azure CLI (`az login`) first:
 ```bash
-func start
+./deploy-backend.sh
 ```
 
-### Frontend
+---
 
-Serve the frontend using a local server to ensure proper routing:
+## Live URLs
 
-```bash
-cd frontend
-npx serve .
-```
+- **Frontend**: [https://recipesharestorage.z36.web.core.windows.net](https://recipesharestorage.z36.web.core.windows.net)
+- **Backend API**: [https://recipeshare-api.polandcentral-01.azurewebsites.net](https://recipeshare-api.polandcentral-01.azurewebsites.net)
 
-## Environment Variables
+---
+
+## GitHub Actions Secrets
+The following secrets must be configured in your GitHub repository for CI/CD to function:
+
+| Secret Name | Description |
+|---|---|
+| `AZURE_USERNAME` | Azure portal login email |
+| `AZURE_PASSWORD` | Azure portal password |
+| `AZURE_FUNCTIONAPP_NAME` | `recipeshare-api` |
+| `AZURE_STORAGE_ACCOUNT` | `recipesharestorage` |
+| `AZURE_STORAGE_KEY` | Storage account access key |
+
+## Environment Variables (Local)
+The following environment variables must be set in your `local.settings.json` (for backend) or local environment for the application to function:
 
 | Variable | Description |
 |---|---|
@@ -115,4 +171,4 @@ npx serve .
 | `SQL_CONNECTION_STRING` | Azure SQL Database connection string |
 | `JWT_SECRET` | Secret key for signing and verifying JSON Web Tokens |
 | `APPINSIGHTS_INSTRUMENTATIONKEY` | Application Insights instrumentation key for monitoring |
-| `LOGIC_APP_NOTIFICATIONS_URL` | Unified endpoint for the Logic App handling notifications (Create/Get/Read) |
+| `LOGIC_APP_NOTIFICATIONS_URL` | Unified endpoint for the Logic App handling notifications |

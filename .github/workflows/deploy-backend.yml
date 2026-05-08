@@ -1,0 +1,58 @@
+name: Deploy Backend to Azure Functions
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'backend/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'backend/package-lock.json'
+
+      - name: Install dependencies
+        run: |
+          cd backend
+          npm install --production
+
+      - name: Create deployment ZIP
+        run: |
+          zip -r backend.zip backend -x "backend/.git/*" "backend/local.settings.json" "backend/.env" "backend/*.test.js" "backend/node_modules/.cache/*"
+
+      - name: Install Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+      - name: Azure Login
+        run: |
+          az login --username "${{ secrets.AZURE_USERNAME }}" --password "${{ secrets.AZURE_PASSWORD }}"
+          az account set --subscription "278df551-fabb-493b-a813-4301a8f23aa7"
+
+      - name: Deploy to Azure Functions
+        run: |
+          az functionapp deployment source config-zip \
+            --name ${{ secrets.AZURE_FUNCTIONAPP_NAME }} \
+            --resource-group recipeshare-rg \
+            --src backend.zip
+
+      - name: Azure Logout
+        if: always()
+        run: |
+          az logout
+
+      - name: Print Success Message
+        run: |
+          echo "Backend deployment successful!"
+          echo "Live URL: https://recipeshare-api.polandcentral-01.azurewebsites.net"

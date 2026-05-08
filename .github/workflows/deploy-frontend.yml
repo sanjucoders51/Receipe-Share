@@ -1,0 +1,36 @@
+name: Deploy Frontend to Azure Storage
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'frontend/**'
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Azure CLI
+        run: |
+          curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+
+      - name: Upload to Blob Storage
+        run: |
+          az storage blob upload-batch \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
+            --destination '$web' \
+            --source ./frontend \
+            --overwrite \
+            --pattern "*" \
+            --exclude-path ".DS_Store:.env"
+
+      - name: Print Success Message
+        run: |
+          echo "Frontend deployment successful!"
+          echo "Live URL: https://recipesharestorage.z36.web.core.windows.net"

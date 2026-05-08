@@ -1,12 +1,17 @@
 # Node
 node_modules/
+**/node_modules/
 npm-debug.log*
+*.log
 bin/
 obj/
 
 # Azure Functions
 local.settings.json
+**/local.settings.json
 .funcignore
+backend.zip
+backend_manual.zip
 
 # IDE
 .vscode/
@@ -16,8 +21,10 @@ local.settings.json
 
 # OS
 .DS_Store
+**/.DS_Store
 Thumbs.db
 
 # Environment
 .env
+**/.env
 .env.local
