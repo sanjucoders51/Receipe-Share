@@ -1,7 +1,7 @@
 {
   "name": "recipeshare-backend",
   "version": "1.0.0",
-  "description": "RecipeShare – Azure Functions Node.js v4 Backend",
+  "description": "RecipeShare – Azure Functions Node.js v4 Serverless Backend API",
   "main": "src/functions/*.js",
   "scripts": {
     "start": "func start",
