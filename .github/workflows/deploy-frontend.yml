@@ -26,9 +26,7 @@ jobs:
             --account-key ${{ secrets.AZURE_STORAGE_KEY }} \
             --destination '$web' \
             --source ./frontend \
-            --overwrite \
-            --pattern "*" \
-            --exclude-path ".DS_Store:.env"
+            --overwrite
 
       - name: Print Success Message
         run: |
